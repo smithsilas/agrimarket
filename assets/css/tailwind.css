@@ -1,0 +1,100 @@
+/*
+ * tailwind.css – brand tokens + reusable component classes.
+ *
+ * By default the site loads Tailwind from the Play CDN (see includes/header.php), so this file
+ * only has to define the pieces that are shared by many templates (.btn, .input, .card …).
+ *
+ * For production, replace the CDN with a compiled build:
+ *   1.  npm i -D tailwindcss
+ *   2.  create tailwind.config.js (copy the theme.extend block from includes/header.php,
+ *       content: ['./**\/*.php', './assets/js/**\/*.js'])
+ *   3.  npx tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/tailwind.build.css --minify
+ *   4.  point header.php at tailwind.build.css and remove the CDN <script>.
+ * (Add `@tailwind base; @tailwind components; @tailwind utilities;` at the top of this file for step 3.)
+ */
+:root {
+  --brand-50: #f0fdf4;
+  --brand-100: #dcfce7;
+  --brand-500: #22c55e;
+  --brand-600: #16a34a;
+  --brand-700: #15803d;
+  --brand-800: #166534;
+  --brand-900: #14532d;
+  --navy: #0f172a;
+  --radius: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition:
+    background-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.05s;
+  cursor: pointer;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--brand-600);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.btn-primary:hover {
+  background: var(--brand-700);
+}
+.btn-secondary {
+  background: #fff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1.5rem;
+}
+.btn-secondary:hover {
+  background: #f9fafb;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  background: #fff;
+}
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--brand-500);
+  border-color: transparent;
+}
+.label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+}
+.badge-green {
+  background: var(--brand-100);
+  color: var(--brand-800);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+}
+
