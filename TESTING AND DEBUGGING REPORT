@@ -1,0 +1,241 @@
+AGRIMARKET
+PRACTICAL ASSESSMENT 2
+TESTING AND DEBUGGING REPORT
+Project: AgriMarket Online Produce Marketplace
+Technology: PHP 8, MySQL/MariaDB, HTML, CSS, JavaScript, Tailwind CSS
+Assessment basis: Static review of the supplied agrimarket-main source archive
+IMPORTANT NOTE ON TEST EVIDENCE
+This report follows the structure and style of the example report supplied. It is based on inspection of the actual AgriMarket project. All 29 PHP files in the archive were checked with the PHP 8.4.24 command-line syntax checker and reported no syntax errors. However, this was a static syntax check, not a full application execution or browser test.
+The supplied archive has important integration problems: the includes/ directory referenced by several pages is missing, and different parts of the code use incompatible database/configuration conventions. Therefore, end-to-end functional, security, payment and browser test results cannot honestly be reported as passed. Test cases below are proposed execution cases unless specifically marked as a completed static check.
+TASK 1: SUMMARY OF TESTING AND TYPES OF TESTING
+1.1 Introduction
+Testing is required to establish whether AgriMarket behaves according to its requirements, handles invalid information safely and protects buyer, farmer and administrator information. The project contains pages and API endpoints for registration, login, produce browsing, cart management, checkout, receipts, profiles, farmer pages and administration.
+The first review focused on understanding the source files, database schema, configuration and dependencies. A PHP syntax check was then carried out on every PHP file in the archive. All 29 files passed this syntax check. Runtime testing is blocked until the missing shared include files and conflicting application/database structures are reconciled.
+1.2 Types of Testing Required
+Testing type	Areas to test	Purpose
+Static code / syntax testing	All PHP files, includes and configuration	Identify syntax errors and unresolved dependencies before execution.
+Functional testing	Registration, login, catalogue, product details, cart, checkout, orders and receipts	Confirm that each feature performs its intended task.
+Validation and negative testing	Email, phone, password, quantities, stock, prices, delivery details and uploads	Confirm invalid or out-of-range data is rejected.
+Database testing	Users, categories, products, orders and order_items	Check schema compatibility, relationships, constraints and data persistence.
+Security testing	Authentication, role checks, CSRF, SQL injection, XSS, sessions, uploads and payment callback	Protect accounts, records and payment processes.
+Usability and compatibility	Navigation, forms, responsive layout and JavaScript interactions	Check that the application is usable on common devices and browsers.
+Payment integration testing	M-Pesa simulation, Daraja request and callback handling	Verify payment status handling without treating simulation as a real payment.
+Regression testing	All corrected modules	Ensure fixes do not break other features.
+
+1.3 Initial Review Results
+Review activity	Result	Status
+PHP syntax check	29 PHP files checked using PHP 8.4.24; no syntax errors reported.	Completed – Pass
+Dependency review	Several pages require an includes/ directory that is absent from the archive.	Issue identified
+Database compatibility review	Root-level helper code and schema appear to use different table/column conventions.	Issue identified
+Configuration review	config.php and config/constants.php define overlapping settings and separate database approaches.	Issue identified
+Browser / end-to-end execution	Not completed because application bootstrap dependencies and schema integration are unresolved.	Blocked
+
+TASK 2: TEST PLAN
+2.1 Introduction
+A test plan defines the modules, test conditions, test data, tools and completion criteria. The plan below is designed for use after the project has been consolidated into one consistent application version.
+2.2 Test Plan Details
+Item	Description
+Application	AgriMarket Online Produce Marketplace
+Server-side language	PHP 8
+Database target	MySQL 8 / MariaDB 10.4+ as stated in database/schema.sql
+Front end	HTML, CSS, JavaScript and supplied Tailwind CSS assets
+Payment integration	Safaricom Daraja API; simulation mode is enabled by default in config/constants.php
+Current review environment	PHP CLI 8.4.24 used for syntax validation
+Runtime environment	Not yet established; requires Apache/PHP and MySQL/MariaDB after integration fixes
+Test data	Use disposable seeded records only after checking seed.php; it truncates existing application tables.
+
+2.3 Modules Included in the Test Scope
+•	register.php – buyer/farmer account registration.
+•	login.php and logout.php – authentication and session termination.
+•	catalogue.php, api/produce.php and product.php – product browsing, filtering and product details.
+•	cart.php and api/cart.php – cart display and cart operations.
+•	checkout.php and api/checkout.php – order creation and M-Pesa payment workflow.
+•	orders.php and receipt.php – buyer order and receipt access.
+•	profile.php, farmer.php, farmers.php and farmer_profile.php – user and farmer information.
+•	admin.php and admin/ pages – administrator and product/order management.
+•	database/schema.sql and database/seed.php – database structure and demonstration data.
+2.4 Entry and Exit Criteria
+Entry criteria: the project must have one working configuration/bootstrap path; all required include files must exist; the database schema must match every SQL query; the database must be seeded with disposable test data; and the home page must load without a fatal error.
+Exit criteria: all agreed test cases have been executed; critical and high-severity defects are resolved; payment callbacks and access controls have been tested; regression tests pass; and any remaining limitations are documented.
+2.5 Proposed Test Schedule
+Activity	Main coverage	Suggested tool	Estimated time
+Project setup and integration	Bootstrap files, configuration, database import	PHP CLI, MySQL client	1–2 hours
+Functional testing	Registration, login, catalogue, cart and checkout	Browser, PHPUnit/manual test scripts	2 hours
+Database testing	CRUD operations, foreign keys, order persistence	MySQL client / phpMyAdmin	1 hour
+Security testing	CSRF, role access, SQL injection, XSS, uploads	Browser, curl, code review	2 hours
+Payment testing	Simulation, callback validation, sandbox flow	Daraja sandbox, application logs	1–2 hours
+Usability and compatibility	Mobile, tablet and desktop layouts	Browser dev tools	1 hour
+Debugging and regression	Fixes and repeat tests	PHP logs, php -l, test scripts	2 hours
+
+TASK 3: FUNCTIONAL TESTING AND RESULTS
+3.1 Introduction
+Functional testing should verify the main workflows from the perspective of buyers, farmers and administrators. Because the current archive cannot be run end-to-end without resolving the integration issues, the following are test cases for execution after the setup is corrected; they are not claimed as completed results.
+3.2 Registration and Login Test Cases
+Test ID	Test performed	Expected result	Current status
+REG-01	Register a buyer with valid name, email, phone and password.	Account is created and buyer can sign in.	Not run – runtime blocked
+REG-02	Register a farmer with farm name and county.	Farmer account is created with farmer role.	Not run – runtime blocked
+REG-03	Register using an email already in use.	Duplicate account is rejected with a clear message.	Not run
+REG-04	Submit invalid email or invalid Kenyan phone number.	Validation rejects the invalid value.	Not run
+REG-05	Attempt to self-register with admin role.	Admin role cannot be assigned through public registration.	Not run
+LOG-01	Sign in with correct credentials.	User is authenticated and redirected appropriately.	Not run
+LOG-02	Sign in with incorrect password.	Access is denied without revealing whether the email exists.	Not run
+LOG-03	Sign out and revisit a protected page.	Session is ended and access is denied or redirected.	Not run
+
+3.3 Catalogue and Product Test Cases
+Test ID	Test performed	Expected result	Current status
+CAT-01	Open the produce catalogue.	Active products are displayed.	Not run
+CAT-02	Filter products by category and county.	Only matching active products are shown.	Not run
+CAT-03	Search for a known product name.	Relevant matching products are returned.	Not run
+CAT-04	Open a product with an invalid/non-existent ID.	A safe not-found response is displayed.	Not run
+CAT-05	Open a hidden product as a public visitor.	Hidden product is not exposed.	Not run
+CAT-06	Sort or paginate catalogue results where supported.	Results follow the selected ordering and page limits.	Not run
+
+3.4 Cart and Checkout Test Cases
+Test ID	Test performed	Expected result	Current status
+CHK-01	Add an active product to the cart.	Product and quantity appear in the cart.	Not run
+CHK-02	Change quantity to zero, negative or non-numeric value.	Invalid quantity is rejected.	Not run
+CHK-03	Request more units than available stock.	System prevents overselling.	Not run
+CHK-04	Submit checkout as a guest.	User is required to authenticate.	Not run
+CHK-05	Manipulate product price in a browser request.	Server uses database price, not client-submitted price.	Not run
+CHK-06	Place an order with valid delivery information.	Order and order items are saved consistently.	Not run
+CHK-07	Open another user's receipt.	Access is denied.	Not run
+CHK-08	Complete checkout in M-Pesa simulation mode.	Simulation status is clearly identified and no real money is charged.	Not run
+
+TASK 4: SECURITY TESTING
+4.1 Introduction
+Security testing should establish whether the application protects personal data, account credentials, order records, uploaded images and payment information. The source contains prepared security-related mechanisms such as PDO prepared statements, password hashing in the seed script, CSRF helper patterns in functions.php, role checks in some pages and a simulated M-Pesa mode. These mechanisms still require runtime verification and consistent integration.
+4.2 Security Test Cases
+Test ID	Security area	Test performed	Expected result	Status
+SEC-01	SQL injection	Submit SQL-like strings in login and search inputs.	Input is treated as data; no query manipulation or database disclosure.	Not run
+SEC-02	Password storage	Register a test account and inspect stored password field.	Password is stored as a secure hash, never plaintext.	Not run
+SEC-03	CSRF	Submit a state-changing form without a valid CSRF token.	Request is rejected.	Not run
+SEC-04	Role-based access	Open administrator and farmer pages as a buyer/guest.	Unauthorised access is denied.	Not run
+SEC-05	XSS	Submit script markup in profile, product and delivery fields.	Output is safely escaped.	Not run
+SEC-06	Session handling	Logout, reuse old session and test session cookie settings.	Old session cannot access protected pages.	Not run
+SEC-07	File upload	Upload executable, oversized and unsupported image files.	Only allowed image types and sizes are accepted; uploaded files cannot execute.	Not run
+SEC-08	Payment callback	Send an invalid or forged payment callback.	Callback is validated and cannot mark an order paid without trusted confirmation.	Not run
+SEC-09	Secrets management	Inspect repository and deployed config for live API credentials.	No live secrets are committed or exposed.	Source review required
+
+4.3 Security Observations from Source Review
+•	functions.php defines CSRF token generation and validation helpers, but some pages use a different missing includes/auth_middleware.php bootstrap. The actual protection path must be unified and tested.
+•	config.php sets several session and security response-header options. Verify that this configuration is loaded by every route, including API endpoints.
+•	api/checkout.php includes an M-Pesa callback route. The callback must be verified against Daraja response structure and protected against forged or repeated callbacks.
+•	admin/add_product.php accepts image uploads. Verify MIME type, extension, file size, generated filename, storage location and server execution restrictions.
+•	database/seed.php includes a shared demo password. Demo credentials must be changed and must never be used on a public deployment.
+4.4 Security Testing Conclusion
+No end-to-end security pass rate can be stated from the supplied archive alone. The source contains some protective mechanisms, but missing includes and conflicting authentication/database conventions prevent confirmation that these controls are consistently applied.
+TASK 5: USABILITY AND COMPATIBILITY TESTING
+5.1 Introduction
+Usability testing should check whether buyers and farmers can understand the navigation, complete forms, browse produce and place orders on common screen sizes. The project includes CSS assets and JavaScript files, but the visual and interactive behaviour must be checked in a browser after the application can be launched.
+Test ID	Device / condition	Test performed	Expected result	Status
+USB-01	Mobile – 375 px	Open home page and catalogue.	No horizontal overflow; content remains readable.	Not run
+USB-02	Tablet – 768 px	Open navigation and product grid.	Navigation and cards fit the viewport.	Not run
+USB-03	Desktop – 1366 px	Browse catalogue and checkout.	Layout uses available space without overlapping elements.	Not run
+USB-04	Keyboard navigation	Navigate forms and buttons using keyboard only.	Interactive elements are reachable and have visible focus.	Not run
+USB-05	Form usability	Submit empty and invalid form values.	Labels and helpful validation messages are displayed.	Not run
+USB-06	JavaScript disabled	Open catalogue and key forms.	Essential content and server-side functions remain accessible where designed.	Not run
+
+5.2 Usability Conclusion
+The source archive includes assets/css/style.css, assets/css/tailwind.css, js/app.js and js/catalogue.js. Their visual performance, responsive behaviour and accessibility have not been confirmed by browser testing.
+TASK 6: DEFECT REPORT
+6.1 Introduction
+A defect is a fault in the application that can cause incorrect behaviour, prevent a feature from running or expose the system to risk. The following issues were identified by inspecting the supplied source archive. They should be logged and retested after correction.
+6.2 Defects and Integration Issues Identified
+ID	Affected area	Observed issue	Impact / severity
+D-01	Application bootstrap	index.php, register.php and other pages require files under includes/, but no includes/ directory is present in the supplied ZIP.	Critical – key pages cannot bootstrap.
+D-02	Authentication integration	Several files call includes/auth_middleware.php and functions such as require_login(), verify_csrf() and csrf_field(), while the archive does not contain that middleware file.	Critical – authentication-dependent pages cannot run as supplied.
+D-03	Database model mismatch	database/schema.sql defines users.id, first_name, last_name and products; root functions.php and other pages contain queries referencing user_id, full_name, status, location, produce and other fields/tables not defined in the supplied schema.	Critical – SQL queries may fail at runtime.
+D-04	Configuration duplication	config.php and config/constants.php define overlapping constants and use different connection/configuration paths.	High – duplicate definitions or inconsistent runtime settings.
+D-05	Database helper duplication	config/db.php defines db() separately from the connection function in functions.php.	High – risk of conflicting database helper definitions.
+D-06	Administrator route naming	The archive contains admin/darshboard.php (misspelled) while links in other files refer to admin/dashboard.php.	Medium – administrator navigation may lead to a missing page.
+D-07	Farmer/profile query compatibility	farmer_profile.php queries fields such as user_id, full_name, location, bio and status that are absent from the supplied users table definition.	High – farmer profile query is incompatible with schema.
+D-08	Missing assets	The visible archive listing does not include an assets/images directory although page templates reference image assets there.	Low/Medium – images may be missing when rendered.
+
+6.3 Classification
+Defect class	Examples	Recommended action
+Missing dependency	D-01, D-02	Restore the intended shared include files or refactor all pages to use the included root-level helpers.
+Database/schema mismatch	D-03, D-07	Choose one schema and update all SQL queries and seed data to match it.
+Configuration/integration	D-04, D-05	Keep one configuration loader and one PDO connection function.
+Routing/file naming	D-06	Rename the dashboard file or update all links consistently.
+Presentation asset gap	D-08	Include required image files or replace references with available assets.
+
+TASK 7: DEFECT CLASSIFICATION AND CORRECTIVE ACTIONS
+7.1 Recommended Corrections
+ID	Recommended correction	Verification required
+D-01	Restore the correct includes/ files or change all entry points to require the existing root-level functions.php, header.php and footer.php.	Open every page and check for missing-file/fatal errors.
+D-02	Implement one authentication middleware with consistent login, role and CSRF helpers; update all pages to use it.	Test guest, buyer, farmer and admin access.
+D-03	Select either the schema in database/schema.sql or the alternate model referenced by the code. Update every query, seed script and foreign key consistently.	Import schema and run CRUD tests for each module.
+D-04	Consolidate settings into one configuration file and avoid defining the same constants twice.	Load all routes and confirm no warnings or inconsistent values.
+D-05	Use one PDO connection factory and include it consistently with require_once.	Confirm one connection works across pages and APIs.
+D-06	Standardise the admin dashboard filename and all navigation URLs.	Click every administrator link and confirm successful response.
+D-07	Align farmer profile fields with the selected users table design.	Load farmer profile and verify displayed details.
+D-08	Add the referenced images to the archive or update paths to available assets.	Check image requests return successful responses.
+
+7.2 Debugging Tools and Techniques
+•	PHP syntax checker: php -l filename.php – completed for all 29 PHP files; no syntax errors were reported.
+•	PHP error log – use to identify missing include files, undefined functions, database errors and runtime exceptions.
+•	MySQL client or phpMyAdmin – import the schema and verify table and column definitions.
+•	Source search – use grep or an IDE search to locate all include paths, function names, constants and SQL table references.
+•	Browser developer tools – inspect network responses, JavaScript console errors, CSS overflow and failed images.
+•	curl or an API client – test HTTP status codes, authentication, CSRF behaviour and API validation.
+•	Daraja sandbox – test STK Push and callback processing without using real customer funds.
+TASK 8: DEBUGGING TOOLS AND EVIDENCE
+8.1 Static Verification Already Performed
+The supplied archive was extracted and all PHP source files were passed individually through PHP 8.4.24's syntax checker. Each reported “No syntax errors detected”. This confirms that the PHP parser accepted the files, but it does not prove that includes, database queries, routes or application workflows work.
+Evidence item	Observation	Meaning
+PHP version	PHP 8.4.24 CLI	Version used for syntax review.
+PHP files checked	29	All PHP files found in the supplied archive.
+Syntax errors reported	0	No parser-level syntax errors found.
+Missing includes directory	Confirmed absent from archive listing	Runtime dependency problem.
+Database schema	Five core tables defined: users, categories, products, orders, order_items	Must be compared against every SQL query.
+Database runtime test	Not run	Requires configured MySQL/MariaDB and compatible application bootstrap.
+
+8.2 Evidence to Capture During Practical Testing
+•	Screenshot of the home page and catalogue after the application starts.
+•	Screenshot of successful buyer and farmer registration.
+•	Screenshot of login success and rejected invalid login.
+•	Screenshot of product filtering and product details.
+•	Screenshot of cart quantity validation and checkout totals.
+•	Screenshot of M-Pesa simulation clearly labelled as a simulation.
+•	PHP/Apache error logs before and after corrections.
+•	Database screenshots showing saved test users, products and orders.
+•	Browser developer tools showing responsive layouts and successful network requests.
+•	Final test execution sheet showing actual Pass/Fail outcomes.
+TASK 9: REGRESSION TESTING
+9.1 Introduction
+Regression testing must be performed after the bootstrap, schema and configuration issues have been corrected. It should repeat the tests for every module affected by a change, not only the page where the original defect was found.
+9.2 Proposed Regression Checklist
+Area	Regression checks	Current status
+Application startup	Home page, shared header/footer, configuration and database connection.	Blocked
+Authentication	Registration, login, logout, role restrictions and CSRF.	Blocked
+Catalogue	Category filters, search, product details and hidden products.	Blocked
+Cart	Add, update, remove, stock validation and totals.	Blocked
+Checkout	Order creation, stock update, delivery details and receipt.	Blocked
+M-Pesa	Simulation, callback validation, duplicate callback and failure status.	Blocked
+Administration	Add product, hide/show product, delete product, stock update and order management.	Blocked
+Farmer area	Farmer profile, own listings and own order lines.	Blocked
+
+9.3 Regression Conclusion
+A final regression pass rate cannot be supplied yet because the project does not currently have a consistent runnable bootstrap and database model in the provided archive. Once the integration defects are fixed, execute the complete test checklist and record actual outcomes, dates, tester and evidence references.
+TASK 10: FINAL VERIFICATION AND REPORT SUMMARY
+10.1 Verification Record
+Verification item	Result from current review
+All PHP files parse successfully	Yes – 29/29 syntax checks passed.
+Application home page executes	Not verified – required includes/functions.php path is missing.
+Database schema imports and matches all queries	Not verified – code/schema mismatch identified.
+Buyer/farmer registration works end-to-end	Not run.
+Cart and checkout work end-to-end	Not run.
+M-Pesa payment integration works	Not run; configuration indicates simulation mode by default.
+Security controls work in a live request	Not verified.
+Responsive browser layout works	Not run.
+Regression test suite passes	Not run.
+
+10.2 Final Summary
+The AgriMarket source archive contains a substantial set of PHP pages and supporting assets for an online produce marketplace. The intended system supports buyer and farmer accounts, product categories and listings, cart and checkout operations, orders, receipts, administration and an M-Pesa payment flow.
+The static syntax review is encouraging: all 29 PHP files passed PHP 8.4.24 syntax checking. However, syntax correctness alone is not sufficient to confirm that the application is operational. The most significant findings are the missing includes/ directory, missing authentication middleware dependencies, inconsistent database models and duplicate configuration/database connection approaches.
+The immediate priority is to consolidate the project into one coherent version: restore or replace the missing shared files, select one database schema, align all SQL statements and seed data with that schema, and standardise configuration and authentication. After those changes, the application should be installed on Apache/PHP with MySQL or MariaDB and the functional, security, usability, payment and regression test cases in this report should be executed.
+GENERAL CONCLUSION
+This review demonstrates the importance of testing both individual source files and the integration between application components. The PHP syntax checks found no parser errors, but the dependency and database review revealed issues that could prevent the website from running correctly. These findings show why successful syntax checking must be followed by installation testing, database testing, functional testing, security testing and browser-based compatibility testing.
+The report deliberately distinguishes completed checks from tests that remain to be executed. Once the identified integration defects have been corrected and the full test plan has been run, the actual test results and supporting screenshots can be added to produce a final assessment report with verified pass and fail totals.
+APPENDIX: KEY SOURCE FILES REVIEWED
+The review covered the supplied project files, including index.php, register.php, login.php, catalogue.php, product.php, cart.php, checkout.php, orders.php, receipt.php, profile.php, farmer.php, farmer_profile.php, farmers.php, admin.php, admin/add_product.php, admin/orders.php, admin/darshboard.php, api/cart.php, api/produce.php, api/checkout.php, functions.php, config.php, config/constants.php, config/db.php, database/schema.sql and database/seed.php, together with the CSS and JavaScript asset folders.
